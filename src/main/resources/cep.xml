@@ -1,0 +1,64 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:esper="http://www.opencredo.com/schema/esper"
+	xmlns:int-esper="http://www.opencredo.com/schema/esper/integration"
+	xmlns:int-groovy="http://www.springframework.org/schema/integration/groovy"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.opencredo.com/schema/esper http://www.opencredo.com/schema/esper/opencredo-esper-3.0.xsd
+		http://www.opencredo.com/schema/esper/integration http://www.opencredo.com/schema/esper/integration/opencredo-integration-esper-3.0.xsd
+		http://www.springframework.org/schema/integration/groovy http://www.springframework.org/schema/integration/groovy/spring-integration-groovy.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    
+        <int:channel id="input"/>   
+        
+        <!-- This is required because we need use a tap...can't consume directly -->
+        <int:service-activator ref="dummy" input-channel="input" method="handle"/> 
+        <bean id="dummy" class="com.pivotal.xd.cep.NoopHandler"/>
+        
+        <!-- Wiretap processing-->
+	    <int-esper:wire-tap-channels default-wire-tap="esperTap">
+    		<int-esper:channel pattern="input"/>
+		</int-esper:wire-tap-channels>
+		
+		<!-- Configure the wiretap with the appropriate Esper statements -->
+		<int-esper:wire-tap id="esperTap" sourceId="defaultWireTap" template-ref="template" post-send="true"/> 
+		<!-- We'll try reading the EPL statement from a file  (file=...), if supplied, if not we'll use the EPL supplied at commandline  (statement=...) -->
+		<bean id="eplFile" class="java.lang.String">
+        	<constructor-arg>
+        		<bean class="org.springframework.util.FileCopyUtils" factory-method="copyToByteArray">
+            		<constructor-arg value="${file:empty.epl}" type="java.io.InputStream" />
+        		</bean>     
+    		</constructor-arg>     
+		</bean>
+		<bean id="eplArg" class="java.lang.String">
+    		<constructor-arg value="${statement:null}" />
+		</bean>
+		
+		<esper:template id="template" configuration="esper-configuration.xml">
+    		<esper:statements>
+    				<esper:statement epl="#{ ''.equals(eplFile) ? eplArg : eplFile }">
+            		<esper:listeners>
+                		<!-- Pass Esper messages to the Esper Channel Adapter -->
+                		<esper:ref bean="esperChannelAdapter"/>
+           	 		</esper:listeners>
+        		</esper:statement>
+    		</esper:statements>
+		</esper:template>
+		
+		<!-- Handle Esper Events -->
+		<int-esper:inbound-channel-adapter id="esperChannelAdapter" channel="esperChannel"/>
+    	<int:channel id="esperChannel"/>
+  		
+  		<!-- Need a splitter because the Esper channel outputs ArrayLists of events -->
+  		<int:splitter input-channel="esperChannel" output-channel="output">
+  			<int-groovy:script location="${script:esper.groovy}" refresh-check-delay="60">
+				<int-groovy:variable name="fields" value="${fields:null}"/>
+				<int-groovy:variable name="delimiter" value="${delimiter:,}"/>
+			</int-groovy:script>
+  		</int:splitter>
+  	
+  		
+  		<int:channel id="output"/>
+  
+</beans>
