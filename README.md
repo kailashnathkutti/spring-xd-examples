@@ -30,7 +30,7 @@ This application processes two streams on real time. Integrated Esper for managi
   * store id
 
 ### This piece of code was tested in following environment 
-  - Sprnig XD RC1 (Single node) http://repo.spring.io/simple/libs-milestone-local/org/springframework/xd/spring-xd/1.0.0.RC1/spring-xd-1.0.0.RC1-dist.zip
+  - Sprnig XD 
   - Rabbit MQ 3.3.4
   - PHD 2 (Works on any Apache Hadoop 2 variants) 
   - Pivotal Single node VM 2.0
