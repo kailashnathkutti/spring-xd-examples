@@ -32,8 +32,7 @@ This application processes two streams on real time. Integrated Esper for managi
 ### This piece of code was tested in following environment 
   - Sprnig XD 
   - Rabbit MQ 3.3.4
-  - PHD 2 (Works on any Apache Hadoop 2 variants) 
-  - Pivotal Single node VM 2.0
+  - Pivotal Single node VM 2.0 (Works on any Apache Hadoop 2 variants but tested on Pivotal Hadoop 2) 
   - Esper 4.6
   - Node.js latest
 
@@ -58,7 +57,11 @@ This application processes two streams on real time. Integrated Esper for managi
 
 9) Start Hadoop by running "Start-all.sh" on the VM's desktop, spring XD single node and XD shell
 
-10) Create following streams
+10) Get a copy of web ui from https://github.com/kailashnathkutti/spring-xd-examples-web-gui
+
+11) Install node.js and packages like http,node-static, socket.io and amqplib
+
+12) Create following streams
  * Dummy stream to see all requests processed by CEP:
  
 		stream create --definition "http --port=8001 | log" --name dummywebserver --deploy
@@ -111,4 +114,9 @@ create stream using following instructions
  * POS (Sales data generator), **I tested it on Python3**. send_py.py can be found at source
  
    python python_2_create_orders.py
-
+   
+### Run Web ui
+ 
+  * Run the server by running command node server.js
+  * Open the web ui at http://localhost:8810 (Tested in Mozilla and Chrome only)
+ 
