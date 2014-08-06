@@ -47,7 +47,7 @@ This application processes two streams on real time. Integrated Esper for managi
 4) Update your spring-xd hadoop config (conf/hadoop.properties) to reflect webhdfs as below:
 
 	fs.default.name=webhdfs://localhost:50070
-5) Copy the files from /scripts to $XD_HOME/modules/process/scripts/
+5) Copy the files from /scripts to $XD_HOME/modules/processor/scripts/
 
 6) Copy cep.xml files from xml to $XD_HOME/modules/processor/
 
@@ -61,7 +61,9 @@ This application processes two streams on real time. Integrated Esper for managi
 
 11) Install node.js and packages like http,node-static, socket.io and amqplib
 
-12) Create following streams
+12) Create two queue in Rabbit cdr_processor_stream and cdr_ui_queue(with routing key name cdr_routing_key and exchange name cdr_exchange)
+
+13) Create following streams
  * Dummy stream to see all requests processed by CEP:
  
 		stream create --definition "http --port=8001 | log" --name dummywebserver --deploy
@@ -80,11 +82,12 @@ This application processes two streams on real time. Integrated Esper for managi
 		
 create stream using following instructions
 	
-		stream create --definition "tap:stream:raw_cdr_stream > transform --script=txt2cdr.groovy | cep --file=empty.epl --fields='areaCode,callerNo'|script --location=findStoreWithPromotions.groovy| filter --expression=!payload.contains('null')|log " --name cdr_processor_tap --deploy
- * Run the CDR stream generator command line 
+		stream create --definition "tap:stream:raw_cdr_stream > transform --script=txt2cdr.groovy | cep --file=empty.epl --fields='areaCode,callerNo'|script --location=findStoreWithPromotions.groovy|rabbit " --name cdr_processor_tap --deploy
+ * Run the CDR stream generator command line (This script simply reads lines from a text file and post it to port 8008)
 	
 	cat /home/gpadmin/Desktop/spring-xd-examples/source/cdr100.txt | sed -e "s/^/curl -d \'POST HTTP\/1.1 localhost Content-Type\:text\/plain Content-Length\:10 text=/"|sed "s/$/\' http\:\/\/localhost\:8008/" | sh
 	
+
   *(I have a bigger file that I can share with you if you need. Email me to kkutti@pivotal.io)*
   
  * Next use case "For every dropped call, give a shopping voucher to the closest store". Change is limited to EPL file 
