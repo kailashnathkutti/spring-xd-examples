@@ -30,7 +30,7 @@ This application processes two streams on real time. Integrated Esper for managi
   * store id
 
 ### This piece of code was tested in following environment 
-  - Sprnig XD 
+  - Spring XD 
   - Rabbit MQ 3.3.4
   - Pivotal Single node VM 2.0 (Works on any Apache Hadoop 2 variants but tested on Pivotal Hadoop 2) 
   - Esper 4.6
@@ -66,23 +66,24 @@ This application processes two streams on real time. Integrated Esper for managi
 13) Create following streams
  * Dummy stream to see all requests processed by CEP:
  
-		stream create --definition "http --port=8001 | log" --name dummywebserver --deploy
+	 stream create --definition "http --port=8001 | log" --name dummywebserver --deploy
 
  * Stream to ingest CDR data to HDFS:
  
-	 	stream create --definition "http --port=8008| hdfs --directory=/xd/tmp/rawdatacdrs --rollover=10000" --name raw_cdr_stream --deploy
+	 stream create --definition "http --port=8008| hdfs --directory=/xd/tmp/rawdatacdrs --rollover=10000" --name raw_cdr_stream --deploy
  	
  * Stream to ingest order data to HDFS:
  
-		stream create --definition "http --port=8009| hdfs --directory=/xd/tmp/raworders --rollover=10000" --name raw_order_stream --deploy
+	 stream create --definition "http --port=8009| hdfs --directory=/xd/tmp/raworders --rollover=10000" --name raw_order_stream --deploy
  * Tap to process the query - Find the callers who makes calls longer than X (X could be any integer) seconds close to my store locations
  	
- 	    - $XD_HOME/modules/process/scripts/empty.epl need to be replaced with this query  (assuming a person makes a single call more than 3500 seconds being rich)
-		select areaCode,callerNo,callDuration from com.pivotal.example.xd.CallDataRecord.win:time(5 sec) where callDuration > 3500 output every 5 seconds
+  $XD_HOME/modules/process/scripts/empty.epl need to be replaced with this query  (for instance assume a person makes a single call that lasts more than 3500 seconds being rich)
+      
+     select areaCode,callerNo,callDuration from com.pivotal.example.xd.CallDataRecord.win:time(5 sec) where callDuration > 3500 output every 5 seconds
 		
 create stream using following instructions
 	
-		stream create --definition "tap:stream:raw_cdr_stream > transform --script=txt2cdr.groovy | cep --file=empty.epl --fields='areaCode,callerNo'|script --location=findStoreWithPromotions.groovy|rabbit " --name cdr_processor_tap --deploy
+	stream create --definition "tap:stream:raw_cdr_stream > transform --script=txt2cdr.groovy | cep --file=empty.epl --fields='areaCode,callerNo'|script --location=findStoreWithPromotions.groovy|rabbit " --name cdr_processor_tap --deploy
  * Run the CDR stream generator command line (This script simply reads lines from a text file and post it to port 8008)
 	
 	cat /home/gpadmin/Desktop/spring-xd-examples/source/cdr100.txt | sed -e "s/^/curl -d \'POST HTTP\/1.1 localhost Content-Type\:text\/plain Content-Length\:10 text=/"|sed "s/$/\' http\:\/\/localhost\:8008/" | sh
@@ -92,15 +93,15 @@ create stream using following instructions
   
  * Next use case "For every dropped call, give a shopping voucher to the closest store". Change is limited to EPL file 
  
-   select areaCode,callerNo,causeForTermination from com.pivotal.example.xd.CallDataRecord.win:time(5 seconds) where causeForTermination!=00 output every 5 seconds
+    select areaCode,callerNo,causeForTermination from com.pivotal.example.xd.CallDataRecord.win:time(5 seconds) where causeForTermination!=00 output every 5 seconds
    
  * Create tap  		
  
- 	stream create --definition "tap:stream:raw_cdr_stream > transform --script=txt2cdr.groovy | cep --file=empty.epl --fields='areaCode,callerNo'|script --location=findStoreWithPromotions.groovy| filter --expression=!payload.contains('null')|log " --name dropped_call_tap --deploy
+    stream create --definition "tap:stream:raw_cdr_stream > transform --script=txt2cdr.groovy | cep --file=empty.epl --fields='areaCode,callerNo'|script --location=findStoreWithPromotions.groovy| filter --expression=!payload.contains('null')|log " --name dropped_call_tap --deploy
  
  * Change the EPL file entry with below query
  
- 	select storeId,avg(amt) as avgAmount from com.pivotal.example.xd.RetailOrder.win:time(5 sec) group by storeId output every 5 seconds  
+    select storeId,avg(amt) as avgAmount from com.pivotal.example.xd.RetailOrder.win:time(5 seconds) group by storeId output every 5 seconds  
  
  * Point of sales use cases. Find average sales across stores in every 5 seconds
 
@@ -116,7 +117,7 @@ create stream using following instructions
  
  * POS (Sales data generator), **I tested it on Python3**. send_py.py can be found at source
  
-   python python_2_create_orders.py
+    python order_generator_python2.py or python3 order_generator.py
    
 ### Run Web ui
  
