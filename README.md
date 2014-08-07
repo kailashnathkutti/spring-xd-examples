@@ -5,7 +5,7 @@ This is a set of examples on using SpringXD for building big data and fast data 
 
 This application processes two streams on real time. Integrated Esper for managing business rule
 
-#### Real time CDR (Call Data Records) data stream Data available in this stream are 
+#### Data set 1: Real time CDR (Call Data Records) data stream Data available in this stream are 
 
   * cdrType - the call connection type e.g. MOC(Mobile Originated Call (attempt)) MTC(Mobile Terminated Call (attempt))
   * imsi - International Mobile Subscriber Identity of the calling party. 
@@ -23,11 +23,16 @@ This application processes two streams on real time. Integrated Esper for managi
   * basicService - Teleservice 'emergency call'. 
   * mscAddress - This field contains the E.164 number assigned to the MSC that generate the network call reference.
   
-####  Real time POS (point of sales) data set. Data available in this stream are 
+####  Data set 2: Real time POS (point of sales) data set. Data available in this stream are 
   * customer id
   * order id
   * amount
   * store id
+  
+###
+  * Retailer want to push promotional offers to all cell phone users who makes single calls lasts more than X seconds
+  * Telco is offering free shopping voucher for every dropped call. Shops where the voucher can be redeemed are always very close to the caller
+  * Retailer wants to know average sale of each shop across the country in every 5 seconds to make instant promotional offer decisions 
 
 ### This piece of code was tested in following environment 
   - Spring XD 
