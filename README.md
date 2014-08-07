@@ -40,14 +40,14 @@ This application processes two streams on real time. Integrated Esper for managi
   - Pivotal Single node VM 2.0 (Works on any Apache Hadoop 2 variants but tested on Pivotal Hadoop 2) 
   - Esper 4.6
   - Node.js latest
-
+  - Redis latest (Used to store reference data/dimensions). 
 
 ### Running the app 
 1) Down load and unpack Pivotal single node VM (tested on 2.0.0-52)
 
 2) Install and configure SpringXD (tested on Version 1.0.1)
 
-3) Download and start Rabbit MQ 
+3) Download and start Rabbit MQ & Redis 
 
 4) Update your spring-xd hadoop config (conf/hadoop.properties) to reflect webhdfs as below:
 
@@ -68,7 +68,9 @@ This application processes two streams on real time. Integrated Esper for managi
 
 12) Create two queue in Rabbit cdr_processor_stream and cdr_ui_queue(with routing key name cdr_routing_key and exchange name cdr_exchange)
 
-13) Create following streams
+13) Run SetUpRedis.groovy to set up all reference data 
+
+14) Create following streams
  * Dummy stream to see all requests processed by CEP:
  
 	 stream create --definition "http --port=8001 | log" --name dummywebserver --deploy
